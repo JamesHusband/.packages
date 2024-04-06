@@ -1,0 +1,33 @@
+{
+  "name": "Jirapi",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/Jirapi/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "generatorOptions": {
+        "packageRoot": "dist/{projectRoot}",
+        "currentVersionResolver": "git-tag"
+      }
+    }
+  },
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/Jirapi",
+        "tsConfig": "apps/Jirapi/tsconfig.lib.json",
+        "packageJson": "apps/Jirapi/package.json",
+        "main": "apps/Jirapi/src/index.ts",
+        "assets": ["apps/Jirapi/*.md"]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    }
+  }
+}

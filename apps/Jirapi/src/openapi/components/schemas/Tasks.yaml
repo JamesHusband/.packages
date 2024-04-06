@@ -1,0 +1,6 @@
+Tasks:
+  type: object
+  properties:
+    example:
+      type: string
+      description: "This is an example property."
