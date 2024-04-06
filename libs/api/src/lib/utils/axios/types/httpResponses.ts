@@ -14,5 +14,4 @@ export type ServerError = {
   data?: any;
 };
 
-// The ADT representing all possible outcomes of an HTTP request
 export type HttpResponse<T> = Success<T> | Failure | ServerError;

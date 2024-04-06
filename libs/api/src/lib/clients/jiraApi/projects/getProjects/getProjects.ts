@@ -1,4 +1,5 @@
-import { Project } from '../..';
+import { Project } from '../getProject/Project';
 
-export const getProjects = async (client): Promise<Project> =>
-  await client.get(`/rest/api/3/project/search`);
+export const getProjects = async (client): Promise<Project> => {
+  return await client.get(`/rest/api/3/project/search`);
+};

@@ -1,12 +1,7 @@
-export interface Project {
-  id: string;
-  key: string;
-  name: string;
-}
+import { Router } from 'express';
+import { projectRoutes } from './projects';
 
-export interface ProjectCreate {
-  key: string;
-  name: string;
-  projectId: string;
-  leadAccountId: string;
-}
+export const JiraApi = (router: Router) => {
+  router.use('/projects', projectRoutes());
+  return router;
+};

@@ -1,4 +1,4 @@
-import { Project } from '../..';
+import { Project } from '../getProject/Project';
 
 export const updateProject = async (
   client,

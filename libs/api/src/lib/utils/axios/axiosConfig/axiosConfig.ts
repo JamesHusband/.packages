@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { authInterceptor } from '../auth';
+import { authInterceptor } from '../../../auth';
 
 export const createAxiosInstance = async (baseURL: string, token: string) => {
   const axiosInstance = axios.create({

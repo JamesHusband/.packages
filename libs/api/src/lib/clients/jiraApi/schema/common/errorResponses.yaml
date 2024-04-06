@@ -1,0 +1,27 @@
+Unauthorized:
+  description: Unauthorized - Authentication credentials were missing or incorrect.
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: Unauthorized
+          statusCode:
+            type: integer
+            example: 401
+
+NotFound:
+  description: Not Found - The requested resource was not found.
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: Not Found
+          statusCode:
+            type: integer
+            example: 404

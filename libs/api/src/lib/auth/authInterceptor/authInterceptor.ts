@@ -1,4 +1,4 @@
-import { getAuthToken } from './authProvider';
+import { getAuthToken } from '../authProvider/authProvider';
 
 export const authInterceptor = (token: string) => async (config) => {
   const authToken = await getAuthToken(token);
