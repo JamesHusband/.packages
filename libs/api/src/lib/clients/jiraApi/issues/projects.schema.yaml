@@ -1,0 +1,13 @@
+paths:
+  /project/{projectIdOrKey}:
+    $ref: "./schemas/getProject.schema.yaml"
+  /projects:
+    get:
+      $ref: "./schemas/getProjects.schema.yaml"
+  /project:
+    post:
+      $ref: "./schemas/createProject.schema.yaml"
+    put:
+      $ref: "./schemas/updateProject.schema.yaml"
+    delete:
+      $ref: "./schemas/deleteProject.schema.yaml"
