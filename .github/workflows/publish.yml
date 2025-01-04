@@ -19,14 +19,16 @@ jobs:
       - name: Get base commit
         id: base-commit
         run: |
-          # Try to get the previous release tag
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          # Get all release tags sorted by version
+          PREV_TAG=$(git tag -l 'v*' | sort -V | grep -v $(git describe --tags --abbrev=0) | tail -n 1)
           if [ -z "$PREV_TAG" ]; then
             # First release - compare with first commit
             BASE=$(git rev-list --max-parents=0 HEAD)
+            echo "First release, using initial commit as base"
           else
-            # Subsequent releases - compare with previous tag
+            # Use previous release tag
             BASE=$PREV_TAG
+            echo "Found previous release tag: $PREV_TAG"
           fi
           echo "Using base: $BASE"
           echo "base=$BASE" >> $GITHUB_OUTPUT
