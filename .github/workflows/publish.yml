@@ -33,6 +33,47 @@ jobs:
       - name: Initialize Nx Cloud
         run: npx nx connect-to-nx-cloud
 
+      - name: Check for removed packages
+        id: check-removed
+        run: |
+          # Get the previous release tag
+          PREV_TAG=$(git tag -l 'v*' | sort -V | grep -v $(git describe --tags --abbrev=0) | tail -n 1)
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "Checking for removed packages since $PREV_TAG..."
+            
+            # Get packages that existed in previous tag
+            PREV_PACKAGES=$(git ls-tree -r --name-only $PREV_TAG packages/ | grep package.json | xargs -I {} git show $PREV_TAG:{} | jq -r '.name' | sort)
+            
+            # Get current packages
+            CURRENT_PACKAGES=$(find packages -name package.json -exec jq -r '.name' {} \; | sort)
+            
+            # Find removed packages
+            REMOVED_PACKAGES=$(comm -23 <(echo "$PREV_PACKAGES") <(echo "$CURRENT_PACKAGES"))
+            
+            if [ -n "$REMOVED_PACKAGES" ]; then
+              echo "Found removed packages:"
+              echo "$REMOVED_PACKAGES"
+              echo "removed_packages=$REMOVED_PACKAGES" >> $GITHUB_OUTPUT
+            else
+              echo "No packages were removed"
+            fi
+          else
+            echo "No previous release found"
+          fi
+
+      - name: Deprecate removed packages
+        if: steps.check-removed.outputs.removed_packages != ''
+        run: |
+          echo "${{ steps.check-removed.outputs.removed_packages }}" | while read package; do
+            if [ -n "$package" ]; then
+              echo "Deprecating package: $package"
+              npm deprecate "$package" "This package has been removed from the monorepo" || echo "Package $package already deprecated or not found"
+            fi
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and Publish
         run: |
           # Get version from release tag
