@@ -54,7 +54,9 @@ jobs:
             if [ -n "$REMOVED_PACKAGES" ]; then
               echo "Found removed packages:"
               echo "$REMOVED_PACKAGES"
-              echo "removed_packages=$REMOVED_PACKAGES" >> $GITHUB_OUTPUT
+              # Convert newline-separated list to JSON array
+              REMOVED_JSON=$(echo "$REMOVED_PACKAGES" | jq -R . | jq -s .)
+              echo "removed_packages=$REMOVED_JSON" >> $GITHUB_OUTPUT
             else
               echo "No packages were removed"
             fi
@@ -62,13 +64,28 @@ jobs:
             echo "No previous release found"
           fi
 
-      - name: Deprecate removed packages
-        if: steps.check-removed.outputs.removed_packages != ''
+      - name: Unlist removed packages
+        if: steps.check-removed.outputs.removed_packages != '[]'
         run: |
-          echo "${{ steps.check-removed.outputs.removed_packages }}" | while read package; do
+          echo '${{ steps.check-removed.outputs.removed_packages }}' | jq -r '.[]' | while read package; do
             if [ -n "$package" ]; then
-              echo "Deprecating package: $package"
-              npm deprecate "$package" "This package has been removed from the monorepo" || echo "Package $package already deprecated or not found"
+              echo "Unlisting package: $package"
+              # Extract package name without scope
+              PKG_NAME=$(echo $package | sed 's/@jameshusband\///')
+              
+              # Get all versions of the package
+              VERSIONS=$(curl -s \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                "https://api.github.com/user/packages/npm/$PKG_NAME/versions" | jq -r '.[].name')
+              
+              # Unlist each version
+              for version in $VERSIONS; do
+                echo "Unlisting $package@$version"
+                npm unpublish "$package@$version" --force || echo "Failed to unlist $package@$version"
+              done
+              
+              echo "Package $package unlisted"
             fi
           done
         env:
