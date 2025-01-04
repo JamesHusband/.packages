@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -21,26 +23,25 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@jameshusband'
 
-      - name: Install dependencies and update lock file
-        run: |
-          npm install
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git add package-lock.json
-          git commit -m "chore: update package-lock.json" || echo "No changes to commit"
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Build all packages
-        run: npx nx run-many --target=build --all
+      - name: Initialize Nx Cloud
+        run: npx nx connect-to-nx-cloud
 
-      - name: Get package directories
-        id: pkg-dirs
-        run: |
-          DIRS=$(find packages -maxdepth 1 -mindepth 1 -type d | jq -R -s -c 'split("\n")[:-1]')
-          echo "dirs=$DIRS" >> $GITHUB_OUTPUT
+      - name: Build affected packages
+        run: npx nx affected --target=build
 
-      - name: Publish packages
+      - name: Get affected packages
+        id: affected-packages
         run: |
-          for dir in $(echo '${{ steps.pkg-dirs.outputs.dirs }}' | jq -r '.[]'); do
+          AFFECTED=$(npx nx print-affected --select=projects | jq -c '. | map(select(startswith("packages/"))) | map(sub("^packages/"; "packages/"))')
+          echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
+
+      - name: Publish affected packages
+        if: steps.affected-packages.outputs.packages != '[]'
+        run: |
+          for dir in $(echo '${{ steps.affected-packages.outputs.packages }}' | jq -r '.[]'); do
             if [ -f "$dir/package.json" ]; then
               cd $dir
               # Ensure correct publishConfig
