@@ -46,17 +46,26 @@ jobs:
       - name: Get affected packages
         id: affected-packages
         run: |
+          echo "Getting affected projects..."
           PROJECTS=$(npx nx show projects --affected --base=${{ steps.base-commit.outputs.base }})
+          echo "Found projects: $PROJECTS"
+          
           PACKAGES_JSON="[]"
+          echo "Processing projects..."
           for project in $PROJECTS; do
+            echo "Checking project: $project"
             if [[ "$project" == "HelloWorld" ]] || [[ "$project" == "PingPong" ]]; then
               dir="packages/${project,,}"  # Convert to lowercase
+              echo "Processing directory: $dir"
               if [ -f "$dir/package.json" ]; then
                 name=$(node -p "require('./$dir/package.json').name")
+                echo "Found package: $name"
                 PACKAGES_JSON=$(echo $PACKAGES_JSON | jq --arg dir "$dir" '. + [$dir]')
+                echo "Updated packages list: $PACKAGES_JSON"
               fi
             fi
           done
+          echo "Final packages list: $PACKAGES_JSON"
           echo "packages=$PACKAGES_JSON" >> $GITHUB_OUTPUT
 
       - name: Publish affected packages
