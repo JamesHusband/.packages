@@ -58,7 +58,9 @@ jobs:
           PROJECTS=$(npx nx show projects --affected --base=${{ steps.base-commit.outputs.base }})
           echo "Found projects: $PROJECTS"
           
-          PACKAGES_JSON="[]"
+          # Initialize empty array for packages
+          declare -a PACKAGE_DIRS=()
+          
           echo "Processing projects..."
           for project in $PROJECTS; do
             echo "Checking project: $project"
@@ -68,8 +70,7 @@ jobs:
               if [ -f "$dir/package.json" ]; then
                 name=$(node -p "require('./$dir/package.json').name")
                 echo "Found package: $name"
-                PACKAGES_JSON=$(echo $PACKAGES_JSON | jq --arg dir "$dir" '. + [$dir]')
-                echo "Updated packages list: $PACKAGES_JSON"
+                PACKAGE_DIRS+=("$dir")
               fi
             elif [[ "$project" == "PingPong" ]]; then
               dir="packages/ping-pong"
@@ -77,13 +78,15 @@ jobs:
               if [ -f "$dir/package.json" ]; then
                 name=$(node -p "require('./$dir/package.json').name")
                 echo "Found package: $name"
-                PACKAGES_JSON=$(echo $PACKAGES_JSON | jq --arg dir "$dir" '. + [$dir]')
-                echo "Updated packages list: $PACKAGES_JSON"
+                PACKAGE_DIRS+=("$dir")
               fi
             fi
           done
-          echo "Final packages list: $PACKAGES_JSON"
-          echo "packages=$PACKAGES_JSON" >> $GITHUB_OUTPUT
+          
+          # Convert array to JSON string
+          JSON_ARRAY=$(printf '%s\n' "${PACKAGE_DIRS[@]}" | jq -R . | jq -s .)
+          echo "Final packages list: $JSON_ARRAY"
+          echo "packages=$JSON_ARRAY" >> $GITHUB_OUTPUT
 
       - name: Publish packages
         if: steps.affected-packages.outputs.packages != '[]'
