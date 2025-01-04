@@ -31,7 +31,11 @@ jobs:
           scope: '@jameshusband'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
+          npm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Initialize Nx Cloud
         run: npx nx connect-to-nx-cloud
