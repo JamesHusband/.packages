@@ -1,8 +1,11 @@
 name: Publish to GitHub Packages
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/**'
 
 jobs:
   build-and-publish:
@@ -19,8 +22,8 @@ jobs:
       - name: Get base commit
         id: base-commit
         run: |
-          # Get the previous release tag, fallback to the first commit if no previous release
-          BASE=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          # Get the previous commit
+          BASE=$(git rev-parse HEAD^)
           echo "base=$BASE" >> $GITHUB_OUTPUT
 
       - name: Set up Node.js
@@ -42,7 +45,13 @@ jobs:
       - name: Get affected packages
         id: affected-packages
         run: |
-          AFFECTED=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects --json | jq -c '.projects | map(select(startswith("packages/"))) | map("packages/" + .)')
+          # Debug: show the raw output
+          echo "Raw nx output:"
+          npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects --json
+          
+          # Get the affected packages with error checking
+          AFFECTED=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects --json | jq -r '.projects[]' | grep '^packages/' | jq -R -s 'split("\n")[:-1]')
+          echo "Processed output: $AFFECTED"
           echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
 
       - name: Publish affected packages
