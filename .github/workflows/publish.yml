@@ -24,7 +24,7 @@ jobs:
           scope: '@jameshusband'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Initialize Nx Cloud
         run: npx nx connect-to-nx-cloud
