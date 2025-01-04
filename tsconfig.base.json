@@ -16,8 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@packages/helloWorld": ["packages/helloWorld/src/index.ts"],
-      "@packages/pingPong": ["packages/ping-pong/src/index.ts"],
-      "@packages/pongping": ["packages/pong-ping/src/index.ts"]
+      "@packages/pingPong": ["packages/ping-pong/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
