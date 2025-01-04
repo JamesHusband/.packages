@@ -54,12 +54,12 @@ jobs:
       - name: Get affected packages
         id: affected-packages
         run: |
-          # Get affected projects in JSON format
-          AFFECTED_JSON=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects --json)
-          echo "Found affected projects: $AFFECTED_JSON"
+          # Get affected projects
+          AFFECTED=$(npx nx show projects --affected --base=${{ steps.base-commit.outputs.base }} --json)
+          echo "Found affected projects: $AFFECTED"
           
           # Extract package directories and convert to JSON array
-          PACKAGES_JSON=$(echo "$AFFECTED_JSON" | jq -c '[.projects[] | select(startswith("HelloWorld") or startswith("PingPong")) | if startswith("HelloWorld") then "packages/helloWorld" else "packages/ping-pong" end]')
+          PACKAGES_JSON=$(echo "$AFFECTED" | jq -c '[.[] | select(startswith("HelloWorld") or startswith("PingPong")) | if startswith("HelloWorld") then "packages/helloWorld" else "packages/ping-pong" end]')
           echo "Final packages list: $PACKAGES_JSON"
           echo "packages=$PACKAGES_JSON" >> $GITHUB_OUTPUT
 
