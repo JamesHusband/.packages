@@ -54,39 +54,14 @@ jobs:
       - name: Get affected packages
         id: affected-packages
         run: |
-          echo "Getting affected projects..."
-          PROJECTS=$(npx nx show projects --affected --base=${{ steps.base-commit.outputs.base }})
-          echo "Found projects: $PROJECTS"
+          # Get affected projects in JSON format
+          AFFECTED_JSON=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects --json)
+          echo "Found affected projects: $AFFECTED_JSON"
           
-          # Initialize empty array for packages
-          declare -a PACKAGE_DIRS=()
-          
-          echo "Processing projects..."
-          for project in $PROJECTS; do
-            echo "Checking project: $project"
-            if [[ "$project" == "HelloWorld" ]]; then
-              dir="packages/helloWorld"
-              echo "Processing directory: $dir"
-              if [ -f "$dir/package.json" ]; then
-                name=$(node -p "require('./$dir/package.json').name")
-                echo "Found package: $name"
-                PACKAGE_DIRS+=("$dir")
-              fi
-            elif [[ "$project" == "PingPong" ]]; then
-              dir="packages/ping-pong"
-              echo "Processing directory: $dir"
-              if [ -f "$dir/package.json" ]; then
-                name=$(node -p "require('./$dir/package.json').name")
-                echo "Found package: $name"
-                PACKAGE_DIRS+=("$dir")
-              fi
-            fi
-          done
-          
-          # Convert array to JSON string
-          JSON_ARRAY=$(printf '%s\n' "${PACKAGE_DIRS[@]}" | jq -R . | jq -s .)
-          echo "Final packages list: $JSON_ARRAY"
-          echo "packages=$JSON_ARRAY" >> $GITHUB_OUTPUT
+          # Extract package directories and convert to JSON array
+          PACKAGES_JSON=$(echo "$AFFECTED_JSON" | jq -c '[.projects[] | select(startswith("HelloWorld") or startswith("PingPong")) | if startswith("HelloWorld") then "packages/helloWorld" else "packages/ping-pong" end]')
+          echo "Final packages list: $PACKAGES_JSON"
+          echo "packages=$PACKAGES_JSON" >> $GITHUB_OUTPUT
 
       - name: Publish packages
         if: steps.affected-packages.outputs.packages != '[]'
