@@ -21,8 +21,14 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@JamesHusband'
 
-      - name: Install dependencies
-        run: npm ci
+      # Update package-lock.json first
+      - name: Install dependencies and update lock file
+        run: |
+          npm install
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add package-lock.json
+          git commit -m "chore: update package-lock.json" || echo "No changes to commit"
 
       - name: Build all packages
         run: npx nx run-many --target=build --all
