@@ -1,5 +1,0 @@
-paths:
-  /jira/tasks:
-    get:
-      summary: "Add your summary here"
-      description: "Add a detailed description here"

@@ -1,5 +1,0 @@
-paths:
-  /jira/users:
-    get:
-      summary: "Add your summary here"
-      description: "Add a detailed description here"
