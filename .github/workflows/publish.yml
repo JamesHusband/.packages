@@ -21,7 +21,6 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@jameshusband'
 
-      # Update package-lock.json first
       - name: Install dependencies and update lock file
         run: |
           npm install
@@ -44,8 +43,6 @@ jobs:
           for dir in $(echo '${{ steps.pkg-dirs.outputs.dirs }}' | jq -r '.[]'); do
             if [ -f "$dir/package.json" ]; then
               cd $dir
-              # Update package name to include GitHub organization scope
-              npm pkg set name="@jameshusband/$(npm pkg get name | tr -d '"' | tr '[:upper:]' '[:lower:]')"
               # Ensure correct publishConfig
               npm pkg set "publishConfig.@JamesHusband:registry"="https://npm.pkg.github.com"
               npm publish --access public
