@@ -16,6 +16,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get base commit
+        id: base-commit
+        run: |
+          # Get the previous release tag, fallback to the first commit if no previous release
+          BASE=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -30,12 +37,12 @@ jobs:
         run: npx nx connect-to-nx-cloud
 
       - name: Build affected packages
-        run: npx nx affected --target=build
+        run: npx nx affected --target=build --base=${{ steps.base-commit.outputs.base }}
 
       - name: Get affected packages
         id: affected-packages
         run: |
-          AFFECTED=$(npx nx print-affected --select=projects | jq -c '. | map(select(startswith("packages/"))) | map(sub("^packages/"; "packages/"))')
+          AFFECTED=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects | jq -c '. | map(select(startswith("packages/"))) | map(sub("^packages/"; "packages/"))')
           echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
 
       - name: Publish affected packages
