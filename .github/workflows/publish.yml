@@ -38,7 +38,10 @@ jobs:
           # Get version from release tag
           VERSION=$(echo ${{ github.ref_name }} | sed 's/^v//')
           
-          # Use nx release to handle versioning and publishing
+          # Build all packages first
+          npx nx run-many --target=build --all
+          
+          # Publish packages
           npx nx release publish --ver=$VERSION
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
