@@ -42,8 +42,18 @@ jobs:
       - name: Get affected packages
         id: affected-packages
         run: |
-          AFFECTED=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects --json | jq -c '.projects | map(select(startswith("packages/"))) | map("packages/" + .)')
-          echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
+          PROJECTS=$(npx nx show projects --affected --base=${{ steps.base-commit.outputs.base }})
+          PACKAGES_JSON="[]"
+          for project in $PROJECTS; do
+            if [[ "$project" == "HelloWorld" ]] || [[ "$project" == "PingPong" ]]; then
+              dir="packages/${project,,}"  # Convert to lowercase
+              if [ -f "$dir/package.json" ]; then
+                name=$(node -p "require('./$dir/package.json').name")
+                PACKAGES_JSON=$(echo $PACKAGES_JSON | jq --arg dir "$dir" '. + [$dir]')
+              fi
+            fi
+          done
+          echo "packages=$PACKAGES_JSON" >> $GITHUB_OUTPUT
 
       - name: Publish affected packages
         if: steps.affected-packages.outputs.packages != '[]'
