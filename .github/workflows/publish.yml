@@ -42,7 +42,7 @@ jobs:
       - name: Get affected packages
         id: affected-packages
         run: |
-          AFFECTED=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects | jq -c '. | map(select(startswith("packages/"))) | map(sub("^packages/"; "packages/"))')
+          AFFECTED=$(npx nx print-affected --base=${{ steps.base-commit.outputs.base }} --select=projects --json | jq -c '.projects | map(select(startswith("packages/"))) | map("packages/" + .)')
           echo "packages=$AFFECTED" >> $GITHUB_OUTPUT
 
       - name: Publish affected packages
