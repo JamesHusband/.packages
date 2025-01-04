@@ -60,8 +60,21 @@ jobs:
           AFFECTED=$(npx nx show projects --affected --base=${{ steps.base-commit.outputs.base }} --json)
           echo "Found affected projects: $AFFECTED"
           
+          # Create a mapping of project names to directory paths
+          declare -A PROJECT_DIRS=(
+            ["HelloWorld"]="packages/helloWorld"
+            ["PingPong"]="packages/ping-pong"
+            ["pongping"]="packages/pong-ping"
+          )
+          
           # Extract package directories and convert to JSON array
-          PACKAGES_JSON=$(echo "$AFFECTED" | jq -c '[.[] | select(startswith("HelloWorld") or startswith("PingPong")) | if startswith("HelloWorld") then "packages/helloWorld" else "packages/ping-pong" end]')
+          PACKAGES_JSON="[]"
+          for project in $(echo "$AFFECTED" | jq -r '.[]'); do
+            if [[ -n "${PROJECT_DIRS[$project]}" ]]; then
+              dir="${PROJECT_DIRS[$project]}"
+              PACKAGES_JSON=$(echo $PACKAGES_JSON | jq --arg dir "$dir" '. + [$dir]')
+            fi
+          done
           echo "Final packages list: $PACKAGES_JSON"
           echo "packages=$PACKAGES_JSON" >> $GITHUB_OUTPUT
 
