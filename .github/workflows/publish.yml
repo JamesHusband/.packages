@@ -48,24 +48,32 @@ jobs:
             # Get current packages
             CURRENT_PACKAGES=$(find packages -name package.json -exec jq -r '.name' {} \; | sort)
             
-            # Find removed packages and create JSON array
-            REMOVED_JSON=$(comm -23 <(echo "$PREV_PACKAGES") <(echo "$CURRENT_PACKAGES") | jq -Rs 'split("\n")[:-1]')
+            # Find removed packages
+            REMOVED_PACKAGES=$(comm -23 <(echo "$PREV_PACKAGES") <(echo "$CURRENT_PACKAGES"))
             
-            if [ "$REMOVED_JSON" != "[]" ]; then
-              echo "Found removed packages: $REMOVED_JSON"
+            if [ -n "$REMOVED_PACKAGES" ]; then
+              echo "Found removed packages:"
+              echo "$REMOVED_PACKAGES"
+              # Create a compact JSON array without whitespace
+              REMOVED_JSON=$(echo "$REMOVED_PACKAGES" | tr '\n' ',' | sed 's/,$//' | sed 's/^/[/' | sed 's/$/]/')
               echo "removed_packages=$REMOVED_JSON" >> $GITHUB_OUTPUT
             else
               echo "No packages were removed"
+              echo "removed_packages=[]" >> $GITHUB_OUTPUT
             fi
           else
             echo "No previous release found"
+            echo "removed_packages=[]" >> $GITHUB_OUTPUT
           fi
 
       - name: Delete removed packages
         if: steps.check-removed.outputs.removed_packages != '[]'
         run: |
-          echo '${{ steps.check-removed.outputs.removed_packages }}' | jq -r '.[]' | while read package; do
+          # Convert JSON array to lines
+          echo '${{ steps.check-removed.outputs.removed_packages }}' | sed 's/^\[//' | sed 's/\]$//' | tr ',' '\n' | while read package; do
             if [ -n "$package" ]; then
+              # Remove quotes from package name
+              package=$(echo $package | tr -d '"')
               echo "Deleting package: $package"
               # Extract package name without scope
               PKG_NAME=$(echo $package | sed 's/@jameshusband\///')
