@@ -48,14 +48,11 @@ jobs:
             # Get current packages
             CURRENT_PACKAGES=$(find packages -name package.json -exec jq -r '.name' {} \; | sort)
             
-            # Find removed packages
-            REMOVED_PACKAGES=$(comm -23 <(echo "$PREV_PACKAGES") <(echo "$CURRENT_PACKAGES"))
+            # Find removed packages and create JSON array
+            REMOVED_JSON=$(comm -23 <(echo "$PREV_PACKAGES") <(echo "$CURRENT_PACKAGES") | jq -Rs 'split("\n")[:-1]')
             
-            if [ -n "$REMOVED_PACKAGES" ]; then
-              echo "Found removed packages:"
-              echo "$REMOVED_PACKAGES"
-              # Convert newline-separated list to JSON array
-              REMOVED_JSON=$(echo "$REMOVED_PACKAGES" | jq -R . | jq -s .)
+            if [ "$REMOVED_JSON" != "[]" ]; then
+              echo "Found removed packages: $REMOVED_JSON"
               echo "removed_packages=$REMOVED_JSON" >> $GITHUB_OUTPUT
             else
               echo "No packages were removed"
