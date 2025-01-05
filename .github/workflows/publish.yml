@@ -64,32 +64,24 @@ jobs:
             echo "No previous release found"
           fi
 
-      - name: Unlist removed packages
+      - name: Delete removed packages
         if: steps.check-removed.outputs.removed_packages != '[]'
         run: |
           echo '${{ steps.check-removed.outputs.removed_packages }}' | jq -r '.[]' | while read package; do
             if [ -n "$package" ]; then
-              echo "Unlisting package: $package"
+              echo "Deleting package: $package"
               # Extract package name without scope
               PKG_NAME=$(echo $package | sed 's/@jameshusband\///')
               
-              # Get all versions of the package
-              VERSIONS=$(curl -s \
+              # Delete the package using GitHub API
+              curl -X DELETE \
                 -H "Accept: application/vnd.github+json" \
                 -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                "https://api.github.com/user/packages/npm/$PKG_NAME/versions" | jq -r '.[].name')
+                "https://api.github.com/user/packages/npm/$PKG_NAME"
               
-              # Unlist each version
-              for version in $VERSIONS; do
-                echo "Unlisting $package@$version"
-                npm unpublish "$package@$version" --force || echo "Failed to unlist $package@$version"
-              done
-              
-              echo "Package $package unlisted"
+              echo "Package $package deleted"
             fi
           done
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Publish
         run: |
