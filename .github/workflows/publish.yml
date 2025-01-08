@@ -88,16 +88,30 @@ jobs:
             fi
           done
 
-      - name: Build and Publish
+      - name: Get base commit
+        id: base-commit
+        run: |
+          # Get the previous release tag
+          PREV_TAG=$(git tag -l 'v*' | sort -V | grep -v $(git describe --tags --abbrev=0) | tail -n 1)
+          if [ -z "$PREV_TAG" ]; then
+            # First release - compare with first commit
+            BASE=$(git rev-list --max-parents=0 HEAD)
+          else
+            # Use previous release tag
+            BASE=$PREV_TAG
+          fi
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+
+      - name: Build affected packages
+        run: npx nx affected --target=build --base=${{ steps.base-commit.outputs.base }}
+
+      - name: Version and publish affected packages
         run: |
           # Get version from release tag
           VERSION=$(echo ${{ github.ref_name }} | sed 's/^v//')
           
-          # Build all packages first
-          npx nx run-many --target=build --all
-          
-          # Publish packages
-          npx nx release publish --ver=$VERSION
+          # Version and publish only affected packages
+          npx nx affected --target=nx-release-publish --base=${{ steps.base-commit.outputs.base }} --ver=$VERSION
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }} 
