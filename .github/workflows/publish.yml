@@ -32,9 +32,16 @@ jobs:
 
       - name: Initialize Nx Cloud
         run: |
+          # Set environment variables
           echo "NX_CLOUD_ACCESS_TOKEN=${{ secrets.NX_CLOUD_ACCESS_TOKEN }}" >> $GITHUB_ENV
           echo "NX_CLOUD_AUTH_TOKEN=${{ secrets.NX_CLOUD_ACCESS_TOKEN }}" >> $GITHUB_ENV
-          npx nx connect-to-nx-cloud --access-token=${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          echo "NX_CLOUD_DISTRIBUTED_EXECUTION=false" >> $GITHUB_ENV
+          
+          # Create nx cloud config
+          echo '{"nxCloudAccessToken": "${{ secrets.NX_CLOUD_ACCESS_TOKEN }}"}' > .nx/nxcloud.json
+          
+          # Connect to Nx Cloud
+          npx nx-cloud start-ci-run --stop-agents-after=build
 
       - name: Check for removed packages
         id: check-removed
