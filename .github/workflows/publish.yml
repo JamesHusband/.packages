@@ -31,7 +31,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Initialize Nx Cloud
-        run: npx nx connect-to-nx-cloud
+        run: |
+          echo "NX_CLOUD_ACCESS_TOKEN=${{ secrets.NX_CLOUD_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "NX_CLOUD_AUTH_TOKEN=${{ secrets.NX_CLOUD_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          npx nx connect-to-nx-cloud --access-token=${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 
       - name: Check for removed packages
         id: check-removed
@@ -104,6 +107,9 @@ jobs:
 
       - name: Build affected packages
         run: npx nx affected --target=build --base=${{ steps.base-commit.outputs.base }}
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 
       - name: Version and publish affected packages
         run: |
@@ -114,4 +120,5 @@ jobs:
           npx nx affected --target=nx-release-publish --base=${{ steps.base-commit.outputs.base }} --ver=$VERSION
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }} 
+          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }} 
