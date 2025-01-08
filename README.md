@@ -15,8 +15,7 @@ My monorepo for managing multiple TypeScript packages using Nx. Packages are aut
 ## 📦 Packages
 
 - `@jameshusband/helloworld` - Hello World package
-- `@jameshusband/ping-pong` - Ping Pong package
-- `@jameshusband/pong-ping` - Pong Ping package
+
 
 ## 🛠️ Tech Stack
 
