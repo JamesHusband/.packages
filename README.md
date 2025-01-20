@@ -10,7 +10,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![GitHub Packages](https://img.shields.io/badge/GitHub%20Packages-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/features/packages)
 
-My monorepo for managing multiple TypeScript packages using Nx. Packages are automatically built, tested, and published to GitHub Packages when a new release is created.
+Monorepo for managing multiple packages using Nx. Packages are automatically built, tested, and published to GitHub Packages when a new release is created.
 
 ## 📦 Packages
 
