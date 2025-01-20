@@ -78,12 +78,6 @@ make publish      # Publish packages to GitHub Packages
    - Run tests
    - Publish changed packages to GitHub Packages
 
-## 🔧 Configuration
-
-- `nx.json` - Nx workspace configuration
-- `.github/workflows/publish.yml` - GitHub Actions workflow for package publishing
-- `project.json` - Individual package configurations
-
 ## 📝 License
 
 [MIT](LICENSE)
