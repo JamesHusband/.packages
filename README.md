@@ -38,7 +38,7 @@ Monorepo for managing multiple packages using Nx. Packages are automatically bui
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/JamesHusband/.packages.git
    cd packages
    ```
 
